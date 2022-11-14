@@ -1,0 +1,11 @@
+spring:
+  kafka:
+    producer:
+      acks: all # this configuration controls "at-least-one" delivery requirement
+    consumer:
+      group-id: testGroup
+      auto-offset-reset: earliest
+      enable-auto-commit: true # this configuration controls "at-most-once" delivery requirement
+      auto-commit-interval: 100 # this configuration controls "at-most-once" delivery requirement
+    topic:
+      name: task1-topic
