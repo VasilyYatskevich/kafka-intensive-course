@@ -16,16 +16,17 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 public class TraveledDistanceKafkaProducer {
     private static Logger logger = LoggerFactory.getLogger(VehicleSignalKafkaProducer.class);
 
-    @Qualifier("traveledDistanceKafkaTemplate")
     @Autowired
-    private KafkaTemplate<String, Double> template;
+    private KafkaTemplate<String, String> template;
 
     @Value("${topics.vehicle-output-topic-name}")
     private String vehicleInputTopic;
 
     public void send(Long id, Double distance) {
         String key = "id_" + id;
-        ListenableFuture<SendResult<String, Double>> send = template.send(vehicleInputTopic, key, distance);
+        String value = distance.toString();
+
+        ListenableFuture<SendResult<String, String>> send = template.send(vehicleInputTopic, key, value);
 
         send.addCallback(new ListenableFutureCallback<>() {
             @Override
@@ -34,13 +35,13 @@ public class TraveledDistanceKafkaProducer {
             }
 
             @Override
-            public void onSuccess(SendResult<String, Double> result) {
+            public void onSuccess(SendResult<String, String> result) {
                 logger.debug("Successfully sent signal to Kafka: " + getFormattedMetadata(result));
             }
         });
     }
 
-    private String getFormattedMetadata(SendResult<String, Double> result) {
+    private String getFormattedMetadata(SendResult<String, String> result) {
         RecordMetadata metadata = result.getRecordMetadata();
 
         return "\nSignal id: " + result.getProducerRecord().key() +

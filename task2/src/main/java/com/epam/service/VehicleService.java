@@ -4,6 +4,7 @@ import com.epam.messaging.TraveledDistanceKafkaProducer;
 import com.epam.messaging.VehicleSignalKafkaProducer;
 import com.epam.model.VehicleSignal;
 import com.epam.model.VehicleTraveledDistance;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.lucene.util.SloppyMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class VehicleService {
     @Autowired
     private TraveledDistanceKafkaProducer traveledDistanceKafkaProducer;
 
-    public void acceptVehicleSignal(VehicleSignal signal) {
+    public void acceptVehicleSignal(VehicleSignal signal) throws Exception {
         vehicleSignalKafkaProducer.send(signal);
     }
 
@@ -42,7 +43,7 @@ public class VehicleService {
                     signal.getLatitude(),
                     signal.getLongitude()
             );
-            vehicleTraveledDistance = signalToMapEntry(signal, distance);
+            vehicleTraveledDistance = signalToMapEntry(signal, existing.getTraveledDistance() + distance);
         } else {
             vehicleTraveledDistance = signalToMapEntry(signal, 0);
         }

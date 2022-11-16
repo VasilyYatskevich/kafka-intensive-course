@@ -2,6 +2,7 @@ package com.epam.controller;
 
 import com.epam.model.VehicleSignal;
 import com.epam.service.VehicleService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,7 @@ public class VehicleController {
     private VehicleService vehicleService;
 
     @PostMapping(value = "/vehicle", consumes = APPLICATION_JSON_VALUE)
-    public void acceptVehicleSignal(@RequestBody VehicleSignal signal) {
+    public void acceptVehicleSignal(@RequestBody VehicleSignal signal) throws Exception {
         vehicleService.acceptVehicleSignal(signal);
     }
 }

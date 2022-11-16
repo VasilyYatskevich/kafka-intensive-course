@@ -4,6 +4,8 @@ spring:
       - localhost:9092
       - localhost:9093
       - localhost:9094
+    consumer:
+      group-id: test-consumer-group
 
 topics:
   vehicle-input-topic-name: vehicle-input-topic

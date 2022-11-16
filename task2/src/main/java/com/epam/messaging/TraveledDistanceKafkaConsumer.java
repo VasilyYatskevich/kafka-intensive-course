@@ -20,16 +20,17 @@ public class TraveledDistanceKafkaConsumer {
 
     @KafkaListener(
             topics = "#{'${topics.vehicle-output-topic-name}'.split(',')}",
-            groupId = "vehicle-output-consumer-group",
-            containerFactory = "traveledDistanceListenerContainerFactory"
+            groupId = "vehicle-output-consumer-group"
     )
     public void listen(
-            @Payload Double distance,
+            @Payload String data,
             @Header(KafkaHeaders.RECEIVED_KEY) String key,
             @Header(KafkaHeaders.CONSUMER) Consumer<?, ? > consumer,
             @Header(KafkaHeaders.RECEIVED_PARTITION) String partition
     ) {
-        logger.debug("Consumed vehicle event. \nConsumer: " + consumer + "\nPartition: " + partition);
+        double distance = Double.parseDouble(data);
+
+        logger.debug("Consumed distance event. \nConsumer: " + consumer + "\nPartition: " + partition);
 
         vehicleService.logDistance(key, distance);
     }
