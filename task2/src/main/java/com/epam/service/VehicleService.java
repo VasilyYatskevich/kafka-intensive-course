@@ -4,12 +4,14 @@ import com.epam.messaging.TraveledDistanceKafkaProducer;
 import com.epam.messaging.VehicleSignalKafkaProducer;
 import com.epam.model.VehicleSignal;
 import com.epam.model.VehicleTraveledDistance;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.lucene.util.SloppyMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import static com.epam.service.VehicleTraveledDistanceStore.vehicleTraveledDistancesStore;
 
@@ -23,17 +25,23 @@ public class VehicleService {
     @Autowired
     private TraveledDistanceKafkaProducer traveledDistanceKafkaProducer;
 
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     public void acceptVehicleSignal(VehicleSignal signal) throws Exception {
         vehicleSignalKafkaProducer.send(signal);
     }
 
+    @Transactional("transactionManager")
     public void calculateAndEmitDistance(VehicleSignal signal) {
-        double distance = calculateVehicleTraveledDistance(signal);
+        VehicleTraveledDistance vehicleTraveledDistance = calculateVehicleTraveledDistance(signal);
 
-        traveledDistanceKafkaProducer.send(signal.getId(), distance);
+        publisher.publishEvent(vehicleTraveledDistance);
+
+        traveledDistanceKafkaProducer.send(signal.getId(), vehicleTraveledDistance.getTraveledDistance());
     }
 
-    public double calculateVehicleTraveledDistance(VehicleSignal signal) {
+    public VehicleTraveledDistance calculateVehicleTraveledDistance(VehicleSignal signal) {
         VehicleTraveledDistance vehicleTraveledDistance;
         if (vehicleTraveledDistancesStore.containsKey(signal.getId())) {
             VehicleTraveledDistance existing = vehicleTraveledDistancesStore.get(signal.getId());
@@ -48,13 +56,16 @@ public class VehicleService {
             vehicleTraveledDistance = signalToMapEntry(signal, 0);
         }
 
-        vehicleTraveledDistancesStore.put(signal.getId(), vehicleTraveledDistance);
-
-        return vehicleTraveledDistance.getTraveledDistance();
+        return vehicleTraveledDistance;
     }
 
     public void logDistance(String id, double distance) {
         logger.info(String.format("Vehicle %s already traveled %.2f meters", id, distance));
+    }
+
+    @TransactionalEventListener
+    public void updateVehicleTraveledDistanceInCache(VehicleTraveledDistance vehicleTraveledDistance) {
+        vehicleTraveledDistancesStore.put(vehicleTraveledDistance.getId(), vehicleTraveledDistance);
     }
 
     /**

@@ -13,6 +13,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class VehicleSignalKafkaConsumer {
@@ -28,6 +29,7 @@ public class VehicleSignalKafkaConsumer {
             topics = "#{'${topics.vehicle-input-topic-name}'.split(',')}",
             containerFactory = "concurrentListenerContainerFactory"
     )
+    @Transactional("kafkaTransactionManager")
     public void listen(
             @Payload String data,
             @Header(KafkaHeaders.CONSUMER) Consumer<?, ? > consumer,

@@ -18,8 +18,13 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 public class VehicleSignalKafkaProducer {
     private static Logger logger = LoggerFactory.getLogger(VehicleSignalKafkaProducer.class);
 
-    @Autowired
     private KafkaTemplate<String, String> template;
+
+    public VehicleSignalKafkaProducer(KafkaTemplate<String, String> template) {
+        this.template = template;
+
+        template.setAllowNonTransactional(true);
+    }
 
     @Autowired
     private ObjectMapper mapper;

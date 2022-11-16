@@ -4,11 +4,11 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -22,6 +22,7 @@ public class TraveledDistanceKafkaProducer {
     @Value("${topics.vehicle-output-topic-name}")
     private String vehicleInputTopic;
 
+    @Transactional("kafkaTransactionManager")
     public void send(Long id, Double distance) {
         String key = "id_" + id;
         String value = distance.toString();

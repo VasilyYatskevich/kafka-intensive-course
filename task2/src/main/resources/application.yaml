@@ -6,6 +6,10 @@ spring:
       - localhost:9094
     consumer:
       group-id: test-consumer-group
+      properties:
+        isolation.level: read_committed
+    producer:
+      transaction-id-prefix: tx-
 
 topics:
   vehicle-input-topic-name: vehicle-input-topic
@@ -14,3 +18,9 @@ topics:
   replicationFactor: 2
   consumersNumber: 3
 
+# uncomment to monitor transactions in logs
+#
+#logging:
+#  level:
+#    org.springframework.transaction: trace
+#    org.springframework.kafka.transaction: debug
